@@ -1,0 +1,86 @@
+---
+title: "Heterogeneity in Covid-19 transmission"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r eval=FALSE}
+for (i in list.files(pattern = ".png")) {
+    cat("```{r echo=FALSE, fig.cap=\"\"}", "\n", "knitr::include_graphics(\"", i, "\")", "\n", "```", "\n\n\n", sep = "")
+}
+```
+
+
+# China dataset
+
+## Infector and infectee age distributions  
+
+```{r echo=FALSE, fig.cap=""}
+knitr::include_graphics("china_age_distributions.png")
+```
+
+\bigskip
+\bigskip
+## Infector and infectee age distribution by household 
+
+```{r echo=FALSE, fig.cap=""}
+knitr::include_graphics("china_age_household.png")
+```
+
+\bigskip
+## Infector age distribution stratified by infectee age
+
+```{r echo=FALSE, fig.cap=""}
+knitr::include_graphics("china_infectee_bins_table.png")
+```
+
+\bigskip
+## Infectee age distribution stratified by infector age
+
+```{r echo=FALSE, fig.cap=""}
+knitr::include_graphics("china_infector_bins_table.png")
+```
+
+\bigskip
+## Age-specific infection patterns
+
+```{r echo=FALSE, fig.cap=""}
+knitr::include_graphics("china_age_matrix_10.png")
+```
+
+\bigskip
+\bigskip
+```{r echo=FALSE, fig.cap="", fig.show="hold", out.width="50%"}
+knitr::include_graphics("china_age_matrix_blue.png")
+knitr::include_graphics("china_age_matrix_5rby.png")
+```
+
+
+\newpage
+# Hong Kong data set
+
+## Network visualisation of transmission chains
+
+```{r echo=FALSE, fig.cap=""}
+knitr::include_graphics("hongkong_network_model.png")
+```
+
+\newpage
+# Korea dataset
+
+## Network visualisation of hospital transmission
+
+```{r echo=FALSE, fig.cap=""}
+knitr::include_graphics("korea_network_vis.png")
+```
+
+\bigskip
+\bigskip
+## Network visualisation of transmission by setting
+
+```{r echo=FALSE, fig.cap=""}
+knitr::include_graphics("korea_network_vis2.png")
+```

@@ -1,0 +1,32 @@
+---
+title: "Understanding the Distriburion of Secondary COVID-19 cases."
+output: pdf_document
+fig_caption: yes
+header-includes:
+  - \usepackage{xcolor}
+  - \usepackage{caption}
+  - \usepackage{float}
+  - \usepackage{hyperref}
+  - \hypersetup{    
+        colorlinks=true,
+        urlcolor=blue
+        }
+---
+
+```{r setup, include=FALSE, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, 
+                      fig.pos = "!H", out.extra = "")
+```
+
+```{r eval=FALSE, include=F, echo=FALSE}
+# An imprecise but sufficient word count tool 
+wc_fn = function(x = character) return(length(stringr::str_split(x, " ")[[1]]))
+wc_fn("")
+```
+
+
+# Quick note
+
+
+
+
