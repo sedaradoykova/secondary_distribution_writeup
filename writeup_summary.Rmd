@@ -24,8 +24,6 @@ wc_fn("")
 ```
 
 
-# Quick note
-
 # Background
 * Not all infectors are born equal i.e. SARS-CoV-2 transmission is heterogeneous.
 * Most individuals don’t infect anybody while a few are responsible for the majority of transmission.
@@ -35,9 +33,9 @@ wc_fn("")
 * How does the contact pattern affect the shape of the secondary case distribution?
 * How does the setting of spreading affect the shape of the secondary case distribution?
 
-### R, reproductive number
-* R is the average number of secondary infections produced by a typical case of an infection in a population.
-* If R >1, there is a chance of an epidemic.  
+### $R$, reproductive number
+* %R% is the average number of secondary infections produced by a typical case of an infection in a population.
+* If $R>1$, there is a chance of an epidemic.  
 * Depends on: 
   * The rate of contacts in the host population.
   * The probability of infection being transmitted during contact.
@@ -54,14 +52,15 @@ wc_fn("")
 ### How do we characterise the secondary case distribution? 
 * Current assumption: negative binomial distribution.
 * Is this necessarily the best assumption in all scenarios? 
-* Transmission is clustered with relatively high aggregation. 
+  * there is no test/proof to support this assumption although it "works"
+* Transmission is clustered with relatively high _aggregation_ (parameter which describes the extent of clustering). 
 
 * Most individuals do not infect anybody while a few are responsible for the majority of transmission.
 * Higher maximum number of new cases.
 * A lower percentage of infectors are responsible for majority of new infections == superspreaders. 
 
 ### Clustering
-* Depends on: 
+* Depends on (similar things like $R$): 
   * The rate of contacts in the host population. 
   * The probability of infection being transmitted during contact.
   * Infectiousness of viral strain, susceptibility to infection, proximity of contact 
@@ -78,11 +77,11 @@ wc_fn("")
 # Methods
 * Find publicly available transmission data in the literature;
 * Aggregate data sets and group transmission chains by setting;
-* social, hospital, work, family, leisure, education, etc
+  * social, hospital, work, family, leisure, education, etc
 * Fit and compare different distributions to the data to test the negative binomial assumption.
 
 ## Data used 
-### Publicly available data -- 
+### Publicly available data
 * Limited data availability
 * Not public and derived from models assuming neg binom 
 * Negative correlation between GDPR and data availability 
@@ -91,7 +90,7 @@ wc_fn("")
 * Bias towards superspreading and early pandemic
 * public private distinction media superspreading events
 
-### Datasets used 
+### Datasets used (all) 
 * Korean Contact Tracing: patients, infectors (where known), detailed location of infection, age, sex, date confirmed that they had the virus.
 * COVID-19 Settings of Transmission: setting (category), indoor/outdoor, country, city, reference (predominantly news articles), number of clusters, primary cases (where known), secondary cases (where known), total number of cases per cluster.
 * Transmission pairs: infector, infectee, ‘cluster risk’ (family, social, work, travel), cluster generation, pair type (imported or local), dates of primary and secondary infections.
@@ -106,9 +105,9 @@ Infector, infectee, ‘cluster risk’ (family, social, work, travel), cluster g
 
 # Restults
 
-### Clusetring 
+### Clusetring - network diagrams
 
-```{r out.width="75%", fig.pos="p"}
+```{r, fig.pos="p"}
 ### Transmission by setting 
 # Hong Kong
 knitr::include_graphics("visualisations/hongkong_network_model.png")
@@ -150,10 +149,18 @@ knitr::include_graphics("visualisations/china_infector_bins_table.png")
 
 ### Age-specific infection patterns 
 
-```{r out.width="75%", fig.pos="p"}
+```{r out.width="50%", fig.pos="p"}
 ### Age-specific infection patterns
 # China
 knitr::include_graphics("visualisations/china_age_matrix_blue.png")
+```
+
+### Age-specific infection patterns - household vs non-household transmission
+
+```{r out.width="66%", fig.pos="p"}
+### Age-specific infection patterns: household/non-household
+# China
+knitr::include_graphics("visualisations/china_age_matrix_house_non_house.png")
 ```
 
 
@@ -173,6 +180,10 @@ knitr::include_graphics("visualisations/china_age_matrix_blue.png")
 * Why are there no long chains of transmission?
   * seen in SARS and other infections
 * Even some qualitative/descriptive treatment of the data can yield interesting observations and insightful questions.
+
+# To Do
+* Look at dates and restrictions at the time of data collection!
+* Look at other data sets which track age/household
 
 
 

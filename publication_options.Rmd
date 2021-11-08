@@ -13,10 +13,17 @@ header-includes:
         }
 ---
 
+### Update from meeting 02/11
+- Could write up as a response to a recent paper on household transmission paper.
+- Individual based models
+- Look at more data sets with age? 
 
 # Quick note
 During my chat with Deirdre at the end of summer, she suggested looking at opionion blogs *etc* of journals. She also suggested first picking a possible place to publish the piece and then tuning the writing to the particular style. \medskip \newline 
 I tried looking at some options myself but felt relatively intimidated by the descriptions of the "standards/rigour" of the work accepted in most places. As you may have seen, our observations are reasonably qualitative (and not very novel) in nature. 
+
+### Response to a recent COVID-19 paper
+Writing a short opinion piece or communication in resposne to a recent paper on COVID-19 transmission in households vs non-households. 
 
 ### Mathematics Today
 *\url{https://ima.org.uk/publications/mathematics-today/}* \smallskip \newline
