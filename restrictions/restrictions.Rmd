@@ -1,0 +1,348 @@
+```{r}
+library("ggplot2")
+library("plyr")
+library("magrittr")
+library("stringr")
+library("patchwork")
+library("animation")
+```
+
+
+
+```{r}
+transmission_pairs_china = read.csv("C:\\Users\\sedar\\Documents\\Seda_Radoykova\\OneDrive - University College London\\Work\\Oxford_BDI_summer_2021\\Secondary distribution\\Data Catalogue\\seda\\freq_distr\\transmission_pairs_china.csv")
+```
+
+```{r}
+colnames(transmission_pairs_china)
+
+# sources of data cited
+# lots of municipalities, health commissions, etc
+transmission_pairs_china$data_source %>% unique #%>% 
+#    stringr::str_split(., " ") %>% unlist %>% unique 
+```
+
+```{r}
+# time frame covered
+# contains all dates for infector and infectee symptom onset reports 
+c(transmission_pairs_china$infector_onset_date,
+         transmission_pairs_china$infectee_onset_date) %>% unique %>% 
+    as.Date(., format = "%m/%d/%y") %>% sort %>% range 
+# fron "2020-01-07" to "2020-02-28"
+```
+
+```{r}
+# cities 
+c(transmission_pairs_china$infector_reported_city,
+  transmission_pairs_china$infector_infected_city, 
+  transmission_pairs_china$infectee_reported_city, 
+  transmission_pairs_china$infectee_infected_city) %>% unique %>% sort 
+```
+
+### Data overview 
+
+- Original data set: 1407 observations. 
+- 581 + 698 = 1279 for household/non-household with known infector and infectee age, household info 
+- drop further to 332 + 328 = 660 for household/non-household, age and with known infection onset dates
+
+
+## Household/non-household pre/post lockdown 
+
+```{r}
+transmission_pairs = dplyr::select(transmission_pairs_china, pair_id, infector_id, infector_age, infectee_id, infectee_age, is_household, infector_onset_date, infectee_onset_date)
+head(transmission_pairs)
+
+
+transmission_pairs$infector_age = as.integer(transmission_pairs$infector_age)
+transmission_pairs$infectee_age = as.integer(transmission_pairs$infectee_age)
+transmission_pairs$is_household = as.factor(transmission_pairs$is_household)
+transmission_pairs$infector_onset_date = as.Date(transmission_pairs$infector_onset_date, 
+                                                 format = "%m/%d/%y")
+transmission_pairs$infectee_onset_date =  as.Date(transmission_pairs$infectee_onset_date, 
+                                                 format = "%m/%d/%y")
+```
+
+```{r}
+transmission_pairs$infector_age_bins5 <-
+    cut(
+        transmission_pairs$infector_age,
+        breaks = seq(0, 95, 5),
+        include.lowest = TRUE,
+        right = FALSE
+    )
+transmission_pairs$infectee_age_bins5 <-
+    cut(
+        transmission_pairs$infectee_age,
+        breaks = seq(0, 95, 5),
+        include.lowest = TRUE,
+        right = FALSE
+    )
+
+# table(transmission_pairs$infector_age_bins5)
+# table(transmission_pairs$infectee_age_bins5)
+```
+
+
+```{r}
+transpairs = transmission_pairs[complete.cases(transmission_pairs),]
+cust_lab_names = levels(transpairs$infector_age_bins5)
+cust_lab_names[seq(2,19,2)] = ""
+```
+
+- do we do infector onset < 23 jan OR infector/infectee onset < 23 jan
+    - numbers only change after calling complete cases in transpairs above
+    - 
+    
+```{r}
+transpairs$lockdown = rep(NA, nrow(transpairs))
+transpairs$lockdown = ifelse((transpairs$infector_onset_date <= "2020-01-23" | transpairs$infectee_onset_date <= "2020-01-23"), "pre", "post")
+table(transpairs$is_household, transpairs$lockdown, useNA = "always")
+```
+
+
+```{r}
+household = transpairs[which(transpairs$is_household == "yes"),]
+non_household = transpairs[which(transpairs$is_household != "yes"),]
+table(transpairs$is_household)
+table(transpairs$lockdown)
+```
+
+
+
+
+```{r}
+household_pre = household[which(household$infector_onset_date <= "2020-01-23"),]
+household_post = household[which(household$infector_onset_date > "2020-01-23"),]
+non_household_pre = non_household[which(non_household$infector_onset_date <= "2020-01-23"),]
+non_household_post = non_household[which(non_household$infector_onset_date > "2020-01-23"),]
+
+list(household_pre, household_post, non_household_pre, non_household_post) %>% purrr::map(., nrow) #%>% unlist %>% sum
+# add to 660 
+```
+
+
+```{r}
+plt_fnc = function(.x = household, .title = "Household age/infection matrix")
+    ggplot(data = .x, aes(x = infector_age_bins5, y = infectee_age_bins5)) +
+    geom_bin2d() +
+    labs(x = "Infector age", y = "Infectee age", title = .title) +
+    theme_minimal() +
+    scale_fill_gradient2(
+        low = "gray95",
+        mid = "steelblue",
+        midpoint = 10,
+        limit = c(0, 15),
+        space = "Lab"
+    ) +
+    scale_x_discrete(breaks = levels(household$infector_age_bins5),
+                     labels = cust_lab_names) +
+    theme(legend.title = element_blank(), legend.position = "none")
+```
+
+```{r}
+all_data = list(household_pre, non_household_pre, household_post, non_household_post)
+all_names = c("Household, pre-lockdown", "Non-household, pre-lockdown", 
+              "Household, post-lockdown", "Non-household, post-lockdown")
+
+all_plts = purrr::map2(all_data, all_names, plt_fnc)
+
+all_plts[[1]] + all_plts[[2]] + all_plts[[3]] + all_plts[[4]]
+```
+
+
+```{r}
+transpairs$lockdown = factor(transpairs$lockdown, 
+                             levels = c("pre", "post"))
+transpairs$is_household = factor(transpairs$is_household, 
+                                 levels = c("yes", "no"))
+```
+
+
+```{r}
+######### LABELS 
+house_labs = c(yes = "Household transmission", 
+               no = "Non-household transmission")
+lock_labs = c(pre = "Pre-lockdown", post = "Post-lockdown")
+
+# facet grid
+plt = ggplot(data = transpairs, aes(x = infector_age_bins5, 
+                              y = infectee_age_bins5)) +
+    geom_bin2d() +
+    labs(x = "Infector age", y = "Infectee age") +#, title = .title) +
+#    theme_minimal() +
+    scale_fill_gradient2(
+        low = "gray95",
+        mid = "steelblue",
+        midpoint = 5,
+        limit = c(0, 10),
+        breaks = c(0,2,4,6,8,10),
+        space = "Lab", name = "Count") +
+    scale_x_discrete(breaks = levels(household$infector_age_bins5),
+                     labels = cust_lab_names) +
+    theme(legend.title = element_blank(), legend.position = "right", 
+          axis.text.x = element_text(angle = 15)) + 
+    facet_grid(lockdown~is_household, 
+               labeller = labeller(is_household = house_labs, 
+                                   lockdown = lock_labs))
+plt
+
+# ggsave(
+#     plt,
+#     file = paste0("household_lockdown.png"),
+#     width = 20,
+#     height = 15,
+#     units = "cm"
+# )
+```
+
+```{r}
+table(transpairs$is_household, transpairs$lockdown, useNA = "always")
+```
+
+
+```{r}
+### check max coutns in every group to adjust scale colors 
+# table( 
+#       household$infector_age_bins5,
+#       household$infectee_age_bins5,
+#       household$lockdown, 
+#       useNA = "always")
+# table( 
+#       non_household$infector_age_bins5,
+#       non_household$infectee_age_bins5,
+#       non_household$lockdown, 
+#       useNA = "no")
+```
+
+### Try bootstrapping 
+
+```{r}
+plt_single = function(.data, .scale_range = c(0,10)){
+    ggplot(data = .data, aes(x = infector_age_bins5, 
+                              y = infectee_age_bins5)) +
+    geom_bin2d() +
+    labs(x = "Infector age", y = "Infectee age") +#, title = .title) +
+#    theme_minimal() +
+    scale_fill_gradient2(
+        low = "gray95",
+        mid = "steelblue",
+        midpoint = .scale_range[2]/2,
+        limit = .scale_range,
+        breaks = seq(from = .scale_range[1], 
+                     to = .scale_range[2], 
+                     length.out = 6),
+        space = "Lab", name = "Count") +
+    scale_x_discrete(breaks = levels(household$infector_age_bins5),
+                     labels = cust_lab_names) +
+    theme(legend.title = element_blank(), legend.position = "right", 
+          axis.text.x = element_text(angle = 15)) + 
+    facet_grid(lockdown~is_household, 
+               labeller = labeller(is_household = house_labs, 
+                                   lockdown = lock_labs))
+}
+```
+
+
+```{r}
+## this sample seems to randomise all the data 
+### add comma data[,c(cols)] OR data[c(cols)]??????
+### this essentially samples from lockdown/no lockdown... 
+## should we sample a date and then calculate lockdown/not?? 
+        ## i.e. should we simulate some data or just draw samples? 
+purrr::map(transpairs[,c("infector_onset_date", 
+                              "infectee_onset_date", 
+                              "infector_age_bins5", 
+                              "infectee_age_bins5",
+                              "is_household",
+                              "lockdown")], 
+       function(x) sample(x, 700, TRUE)) %>% as.data.frame %>% 
+    plt_single(., c(0,13))
+## lol sometimes it doesn't sample all the labels hahaha
+```
+```{r}
+## this samples from the original groups
+transpairs[sample(1:nrow(transpairs), 1000, T), ] %>% 
+    plt_single(., c(0,19))
+```
+
+### Make gifs 
+
+```{r}
+# make plots and save in ggplot objects 
+
+plts = list()
+for (i in 1:50) {
+    plts[[i]] = transpairs[sample(1:nrow(transpairs), 1000, T), ] %>% 
+    plt_single(., c(0,22))
+}
+
+#plts
+
+# saveGIF({
+#     print(plts)
+# }, ani.width = 2362*0.5, ani.height = 1771*0.5, interval = 1/2)
+```
+
+```{r}
+## use this one for factors!!! 
+plt_single = function(.data, .scale_range = c(0,10)){
+  .data$lockdown = factor(.data$lockdown, 
+                             levels = c("pre", "post"))
+  .data$is_household = factor(.data$is_household, 
+                                 levels = c("yes", "no"))
+  house_labs = c(yes = "Household transmission", 
+               no = "Non-household transmission")
+  lock_labs = c(pre = "Pre-lockdown", post = "Post-lockdown")
+  ggplot(data = .data, aes(x = infector_age_bins5, 
+                              y = infectee_age_bins5)) +
+    geom_bin2d() +
+    labs(x = "Infector age", y = "Infectee age") +#, title = .title) +
+#    theme_minimal() +
+    scale_fill_gradient2(
+        low = "gray95",
+        mid = "steelblue",
+        midpoint = .scale_range[2]/2,
+        limit = .scale_range,
+        breaks = seq(from = .scale_range[1], 
+                     to = .scale_range[2], 
+                     length.out = 6),
+        space = "Lab", name = "Count") +
+    scale_x_discrete(breaks = levels(household$infector_age_bins5),
+                     labels = cust_lab_names) +
+    theme(legend.title = element_blank(), legend.position = "right", 
+          axis.text.x = element_text(angle = 15)) + 
+    facet_grid(lockdown~is_household, 
+               labeller = labeller(is_household = house_labs, 
+                                   lockdown = lock_labs))
+}
+```
+
+
+```{r}
+## more randomised data 
+plts_bs = list()
+for (i in 1:50) {
+plts_bs[[i]] = purrr::map(transpairs[,c("infector_onset_date", 
+                              "infectee_onset_date", 
+                              "infector_age_bins5", 
+                              "infectee_age_bins5",
+                              "is_household",
+                              "lockdown")], 
+       function(x) sample(x, 700, TRUE)) %>% as.data.frame %>% 
+    plt_single(., c(0,13))
+}
+
+# saveGIF({
+#     print(plts_bs)
+# }, ani.width = 2362*0.5, ani.height = 1771*0.5, interval = 1/2)
+```
+
+
+```{r}
+# save gifs
+# save(plts, plts_bs, file = "data/boostratp_data.RData")
+load("data/boostratp_data.RData")
+```
+
+
+
